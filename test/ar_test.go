@@ -5,11 +5,33 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/straysh/godeb"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"strings"
 	"testing"
 )
+
+func Test_InvalidDeb(t *testing.T) {
+	debfile := "../testdata/demo.tar.bz2"
+	in, err := os.Open(debfile)
+	if err != nil {
+		t.Fatalf("failed to open debfile->%+v", err)
+	}
+
+	b2 := make([]byte, 1024)
+	_, err = in.Read(b2)
+	if err != nil {
+		t.Fatalf("failed to read section->%+v", err)
+	}
+	in2 := bytes.NewReader(b2)
+
+	deb, err := godeb.LoadDeb(in2)
+	if err != nil {
+		assert.Equal(t, err, godeb.ErrInvalidDeb)
+	}
+	assert.Empty(t, deb)
+}
 
 func Test_PartialDebControl(t *testing.T) {
 	debfile := "../testdata/com.deepin.appstore.helloworld_amd64_5.6.8-1.deb"

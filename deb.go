@@ -11,6 +11,10 @@ import (
 	"strings"
 )
 
+var (
+	ErrInvalidDeb = errors.New("header doesn't look right, mybe not archive")
+)
+
 // Debian包是标准的Unix ar格式归档，其含两个tar包——一个保存control信息；另一个含有安装文件。
 // Debian包内容按顺序如下：
 // 1. `debian-binary`: 只有一行文本，记录了包格式版本号。现行版本号为`2.0`
@@ -61,6 +65,15 @@ func LoadDeb(in Reader) (*Deb, error) {
 // LoadAr 加载ar归档返回map[string]*ArItem
 func LoadAr(in Reader) (map[string]*ArItem, error) {
 	contents := make(map[string]*ArItem)
+
+	header := make([]byte, 8)
+	if _, err := in.ReadAt(header, 0); err != nil {
+		return nil, err
+	}
+	if string(header) != "!<arch>\n" {
+		return nil, ErrInvalidDeb
+	}
+
 	arReader := ar.NewReader(in)
 	offset := int64(8)
 	for {
