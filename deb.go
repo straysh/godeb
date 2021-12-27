@@ -7,7 +7,6 @@ import (
 	"github.com/blakesmith/ar"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 )
@@ -27,8 +26,13 @@ type Deb struct {
 	ArItem     map[string]*ArItem
 }
 
+type Reader interface {
+	io.Reader
+	io.ReaderAt
+}
+
 // LoadDeb 加载deb包，返回*Deb结构
-func LoadDeb(in *os.File) (*Deb, error) {
+func LoadDeb(in Reader) (*Deb, error) {
 	contents, err := LoadAr(in)
 	if err != nil {
 		return nil, err
@@ -55,7 +59,7 @@ func LoadDeb(in *os.File) (*Deb, error) {
 }
 
 // LoadAr 加载ar归档返回map[string]*ArItem
-func LoadAr(in *os.File) (map[string]*ArItem, error) {
+func LoadAr(in Reader) (map[string]*ArItem, error) {
 	contents := make(map[string]*ArItem)
 	arReader := ar.NewReader(in)
 	offset := int64(8)

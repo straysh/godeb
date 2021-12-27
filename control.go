@@ -21,7 +21,10 @@ import (
 // Control Package别名
 type Control = Package
 
-// Package deb包头Control信息
+// Package 包头Control解析, 解析为 <key> <-> <value>字典后转换为Package结构体
+// 未识别的字段保存在Opts中, Raw为原始数据
+// 该方法保证不出错地且不校验语法地解析出所有字段
+// 其<key>和<value>均删除了收尾空格(如果有)
 type Package struct {
 	Package       string            `json:"package"` //mandatory
 	Source        string            `json:"source,omitempty"`
@@ -69,6 +72,7 @@ func Parse(r io.Reader) (*Package, error) {
 	}
 
 	pkg := fromMap(m)
+	pkg.Raw = m
 	pkg.RawText = bf.String()
 	return pkg, nil
 }
@@ -91,6 +95,5 @@ func fromMap(m map[string]string) *Package {
 			}
 		}
 	}
-	pkg.Raw = m
 	return &pkg
 }
