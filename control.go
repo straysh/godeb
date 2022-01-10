@@ -26,25 +26,25 @@ type Control = Package
 // 该方法保证不出错地且不校验语法地解析出所有字段
 // 其<key>和<value>均删除了收尾空格(如果有)
 type Package struct {
-	Package       string            `json:"package"` //mandatory
-	Source        string            `json:"source,omitempty"`
-	Version       string            `json:"version"`      //mandatory
-	Section       string            `json:"section"`      //recommended
-	Priority      string            `json:"priority"`     //recommended
-	Architecture  string            `json:"architecture"` //mandatory
-	Essential     string            `json:"essential,omitempty"`
-	Depends       string            `json:"depends,omitempty"`
-	Recommends    string            `json:"recommends,omitempty"`
-	Suggests      string            `json:"suggests,omitempty"`
-	Enhances      string            `json:"enhances,omitempty"`
-	PreDepends    string            `json:"pre_depends,omitempty"`
-	InstalledSize int64             `json:"installed_size,omitempty"`
-	Maintainer    string            `json:"maintainer"`  //mandatory
-	Description   string            `json:"description"` //mandatory
-	Homepage      string            `json:"homepage,omitempty"`
-	Opts          string            `json:"opts,omitempty"`
-	Raw           map[string]string `json:"raw,omitempty"`
-	RawText       string            `json:"-"`
+	Package       string            `json:"package" field:"Package"` //mandatory
+	Source        string            `json:"source,omitempty" field:"Source"`
+	Version       string            `json:"version" field:"Version"`           //mandatory
+	Section       string            `json:"section" field:"Section"`           //recommended
+	Priority      string            `json:"priority" field:"Priority"`         //recommended
+	Architecture  string            `json:"architecture" field:"Architecture"` //mandatory
+	Essential     string            `json:"essential,omitempty" field:"Essential"`
+	Depends       string            `json:"depends,omitempty" field:"Depends"`
+	Recommends    string            `json:"recommends,omitempty" field:"Recommends"`
+	Suggests      string            `json:"suggests,omitempty" field:"Suggests"`
+	Enhances      string            `json:"enhances,omitempty" field:"Enhances"`
+	PreDepends    string            `json:"pre_depends,omitempty" field:"Pre-Depends"`
+	InstalledSize int64             `json:"installed_size,omitempty" field:"Installed-Size"`
+	Maintainer    string            `json:"maintainer" field:"Maintainer"`   //mandatory
+	Description   string            `json:"description" field:"Description"` //mandatory
+	Homepage      string            `json:"homepage,omitempty" field:"Homepage"`
+	Opts          string            `json:"opts,omitempty" field:"-"`
+	Raw           map[string]string `json:"raw,omitempty" field:"-"`
+	RawText       string            `json:"-" field:"-"`
 }
 
 // Parse 解析包头Control
@@ -83,9 +83,11 @@ func fromMap(m map[string]string) *Package {
 	v := reflect.ValueOf(&pkg).Elem()
 	t := reflect.TypeOf(pkg)
 	for i, n := 0, t.NumField(); i < n; i++ {
-		tf := t.Field(i)
+		//tf := t.Field(i)
 		vf := v.Field(i)
-		if value, ok := m[tf.Name]; ok {
+		tag := v.Type().Field(i).Tag
+		field := tag.Get("field")
+		if value, ok := m[field]; ok {
 			switch vf.Kind() {
 			case reflect.String:
 				vf.SetString(value)
